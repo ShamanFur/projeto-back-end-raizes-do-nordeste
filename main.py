@@ -1,0 +1,14 @@
+from fastapi import FastAPI
+from arq.api import auth
+
+app = FastAPI(
+    title="Projeto: Raízes do Nordeste API",
+    description="API Back-end para o projeto da rede de lanchonetes Raízes do Nordeste",
+    version="1.0.0"
+)
+
+app.include_router(auth.router)
+
+@app.get("/")
+def raiz():
+    return {"mensagem": "A API da Raízes do Nordeste funcionando!"}

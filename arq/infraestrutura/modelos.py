@@ -6,8 +6,8 @@ import enum
 
 #classes enums para valores fixos 
 #valores fixos
-class PerfilEnum(enum.Enum):
-    ADMIN = "admin"
+class PerfilEnum(str, enum.Enum):
+    ADMIN = "ADMIN"
     GERENTE = "GERENTE"
     COZINHA = "COZINHA"
     ATENDENTE = "ATENDENTE"
@@ -28,7 +28,7 @@ class StatusPedidoEnum(str, enum.Enum):
     PREPARANDO = "PREPARANDO"
     PRONTO = "PRONTO"
     ENTREGUE = "ENTREGUE"
-    CANCELADO = "CALCELADO"
+    CANCELADO = "CANCELADO"
 
 #estado do pagamento
 class StatusPagamentoEnum(str, enum.Enum):
@@ -52,7 +52,7 @@ class Unidade(Base):
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String(100), nullable=False)
     endereco = Column(String(255), nullable=False)
-    ativa = Column(Boolean, default=True)
+    ativo = Column(Boolean, default=True)
 
 class Produto(Base):
     __tablename__ = "produtos"
@@ -105,7 +105,7 @@ class Pagamento(Base):
     pedido = relationship("Pedido")
 
 class Fidelidade(Base):
-    __tablename__ = "fidelidades"
+    __tablename__ = "fidelidade"
     id = Column(Integer, primary_key=True, index=True)
     cliente_id = Column(Integer, ForeignKey("usuarios.id"), unique=True, nullable=False)
     pontos = Column(Integer, default=0)
