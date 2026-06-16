@@ -7,7 +7,7 @@ from typing import List
 
 router= APIRouter(prefix="/estoque", tags=["Estoque"])
 
-@router.post("/emtrada", response_model= EstoqueResposta, status_code=201) # verifica se a unidade existe e se nao retorna erro 404 isso vale pra todas as verificações
+@router.post("/entrada", response_model= EstoqueResposta, status_code=201) # verifica se a unidade existe e se nao retorna erro 404 isso vale pra todas as verificações
 def entrada_estoque(dados: EstoqueMovimentar, db: Session =Depends(get_db)):
     unidade = db.query(Unidade). filter(Unidade.id == dados.unidade_id).first()
     if not unidade:
