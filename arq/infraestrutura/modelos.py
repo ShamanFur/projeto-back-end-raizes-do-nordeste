@@ -42,7 +42,7 @@ class Usuario(Base):
     nome = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, nullable=False)
     senha_hash = Column(String(255), nullable=False)
-    perfil = Column(Enum(PerfilEnum), nullable=False)
+    perfil = Column(Enum(PerfilEnum),default=PerfilEnum.CLIENTE, nullable=False)
     ativo = Column(Boolean, default=True)
     criado_em = Column(DateTime, server_default=func.now())
     consentimento_lgpd = Column(Boolean, default=False)
@@ -70,6 +70,12 @@ class Estoque(Base):
     quantidade = Column(Integer, default=0)
     produto = relationship("Produto")
     unidade = relationship("Unidade")
+class Fidelidade(Base):
+    __tablename__ = "fidelidades"
+    id = Column(Integer, primary_key=True, index=True)
+    cliente_id = Column(Integer, ForeignKey("usuarios.id"), unique=True, nullable=False)
+    pontos = Column(Integer, default=0)
+    cliente = relationship("Usuario")
 
 
 class Pedido(Base):
@@ -103,10 +109,3 @@ class Pagamento(Base):
     payload = Column(Text, nullable=True) 
     criado_em = Column(DateTime, server_default=func.now())
     pedido = relationship("Pedido")
-
-class Fidelidade(Base):
-    __tablename__ = "fidelidade"
-    id = Column(Integer, primary_key=True, index=True)
-    cliente_id = Column(Integer, ForeignKey("usuarios.id"), unique=True, nullable=False)
-    pontos = Column(Integer, default=0)
-    cliente = relationship("Usuario")
