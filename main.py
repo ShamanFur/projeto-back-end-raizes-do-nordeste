@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from arq.api import auth, unidades, produtos, estoque, pedidos
+from arq.api import auth, unidades, produtos, estoque, pedidos, pagamentos
 
 app = FastAPI(
     title="Projeto: Raízes do Nordeste API",
@@ -12,6 +12,7 @@ app.include_router(unidades.router)
 app.include_router(produtos.router)
 app.include_router(estoque.router)
 app.include_router(pedidos.router)
+app.include_router(pagamentos.router)
 
 @app.get("/")
 def raiz():
