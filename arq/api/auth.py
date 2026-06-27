@@ -4,6 +4,7 @@ from arq.infraestrutura.database import get_db
 from arq.infraestrutura.modelos import Usuario, Fidelidade
 from arq.dominio.schemas import UsuarioCadastro, UsuarioLogin, Token, ErroPadrao
 from arq.aplicacao.auth import hash_senha, verificar_senha, criar_token
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
 
@@ -88,3 +89,18 @@ def login(dados: UsuarioLogin, db: Session = Depends(get_db)):
         user=usuario
     )
 
+# endpoint para compatibilidade com o Swagger/OAuth2
+# o campo "username" do OAuth2 é usado como email
+@router.post("/token", status_code=200)
+def login_oauth2(form_data: OAuth2PasswordRequestForm= Depends(), db: Session=Depends(get_db)):
+    usuario = db.query(Usuario).filter(Usuario.email == form_data.username). first()
+    if not usuario or not verificar_senha(form_data.password, usuario.senha_hash):
+        raise HTTPException(status_code=401, detail={
+                "error": "CREDENCIAIS_INVALIDAS",
+                "message": "E-mail ou senha inválidos.",
+                "details": [],
+                "path": "/auth/token"
+            }
+        )
+    token = criar_token({"sub":str(usuario.id), "perfil": usuario.perfil.value})
+    return {"access_token":token, "token_type": "bearer"}

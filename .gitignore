@@ -1,10 +1,11 @@
+#variaveis
 .env 
-
+#ambiente
 venv/
-
+#dados do banco
 .db
 .sqlite
-
+#cache
 __pycache__/
 *.pyc
 *.pyo

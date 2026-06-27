@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from arq.infraestrutura.database import get_db
-from arq.infraestrutura.modelos import Pedido, ItemPedido, Produto, Estoque, StatusPedidoEnum
+from arq.infraestrutura.modelos import Pedido, ItemPedido, Produto, Estoque, StatusPedidoEnum, Pagamento, Fidelidade, StatusPagamentoEnum, PerfilEnum
 from arq.dominio.schemas import PedidoCriar, PedidoResposta
 from typing import List, Optional
+from arq.aplicacao.seguranca import get_usuario_atual, requer_perfil
 
 router= APIRouter(prefix="/pedidos", tags=["Pedidos"])
 
 @router.post("/", response_model= PedidoResposta, status_code=201)
-def criar_pedido(pedido: PedidoCriar, db: Session = Depends(get_db)):
+def criar_pedido(pedido: PedidoCriar, db: Session = Depends(get_db), usuario_atual = Depends(get_usuario_atual)):
+    #protecao JWT (so usuarios logados)
     # calcula e valida os itens e estoque
     total = 0.0
     itens_validados =[]
@@ -42,7 +44,7 @@ def criar_pedido(pedido: PedidoCriar, db: Session = Depends(get_db)):
         itens_validados.append((produto, item.quantidade, estoque))
     #cria o pedido
     novo_pedido = Pedido(
-        cliente_id=1, #teste dps retirar para colocar o certo !!IMPORTANTE!!!!
+        cliente_id= usuario_atual.id, #arrumado
         unidade_id= pedido.unidade_id,
         canal_pedido= pedido.canal_pedido,
         total= total
@@ -71,7 +73,8 @@ def criar_pedido(pedido: PedidoCriar, db: Session = Depends(get_db)):
 def listar_pedidos(
     canal_pedido: Optional[str] = None,
     status: Optional[str] = None,
-    db: Session= Depends(get_db)):
+    db: Session= Depends(get_db), 
+    usuario_atual =Depends(get_usuario_atual)):
 
     query= db.query(Pedido)
     if canal_pedido:
@@ -81,7 +84,7 @@ def listar_pedidos(
     return query.all()
 
 @router.get("/{pedido_id}", response_model=PedidoResposta)
-def buscar_pedido(pedido_id: int, db:Session=Depends(get_db)):
+def buscar_pedido(pedido_id: int, db:Session=Depends(get_db), usuario_atual =Depends(get_usuario_atual)):
     pedido= db.query(Pedido).filter(Pedido.id == pedido_id).first()
     if not pedido:
         raise HTTPException(
@@ -97,7 +100,7 @@ def buscar_pedido(pedido_id: int, db:Session=Depends(get_db)):
 
 #atualiza o status do pedido
 @router.patch("/{pedido_id}/status",response_model=PedidoResposta)
-def atualizar_status(pedido_id: int, novo_status: StatusPedidoEnum, db:Session=Depends(get_db)):
+def atualizar_status(pedido_id: int, novo_status: StatusPedidoEnum, db:Session=Depends(get_db), usuario_atual= Depends(requer_perfil([PerfilEnum.ADMIN, PerfilEnum.GERENTE, PerfilEnum.COZINHA]))):
     pedido = db.query(Pedido).filter (Pedido.id == pedido_id).first()
     if not pedido:
         raise HTTPException(
@@ -116,7 +119,7 @@ def atualizar_status(pedido_id: int, novo_status: StatusPedidoEnum, db:Session=D
 
 #cancelar pedido mas sem poder cancelar o que ja foi entregue
 @router.patch("/{pedido_id}/cancelar", response_model=PedidoResposta)
-def cancelar_pedido(pedido_id:int, db:Session=Depends(get_db)):
+def cancelar_pedido(pedido_id:int, db:Session=Depends(get_db), usuario_atual =Depends(get_usuario_atual)):
     pedido = db.query(Pedido).filter (Pedido.id== pedido_id).first()
     if not pedido:
         raise HTTPException(

@@ -6,7 +6,7 @@ from arq.infraestrutura.modelos import Usuario, PerfilEnum
 from arq.aplicacao.auth import verificar_token
 
 # define o endpoint de login para o OAuth2 para evitar ter que colocar munalmente o token em cada requisição
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "/auth/token")
 #função que recebe o token do cliente e e a sessão do banco para retornar o usuario ja logado(uso do depends para não ter que colocar manualmente o token)
 def get_usuario_atual(
         token: str = Depends(oauth2_scheme), db: Session = Depends(get_db) 
