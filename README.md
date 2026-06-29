@@ -42,8 +42,11 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```sql
 CREATE DATABASE projeto_raizes_nordeste CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
-
-2. Execute as migrations:
+2.Para acessar como ADMIN crie no MySQL e apos isso faça login com a senha(god123) no Swegger:
+```sql
+UPDATE usuarios SET perfil = 'ADMIN' WHERE email = 'dono@gmail.com';
+```
+3. Execute as migrations:
 ```bash
 alembic upgrade head
 ```
